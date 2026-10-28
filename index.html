@@ -12,23 +12,23 @@
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  display:flex;flex-direction:column;min-height:100vh}
-header{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+  display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+header{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line)}
 header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.02em}
-button{font:inherit;color:var(--ink);background:#222a33;border:1px solid #3a4550;border-radius:6px;padding:7px 14px;cursor:pointer}
+button{font:inherit;font-size:14px;color:var(--ink);background:#222a33;border:1px solid #3a4550;border-radius:6px;padding:6px 10px;white-space:nowrap;cursor:pointer}
 button:hover{background:#2b3541}
 button.primary{background:#2d6a4f;border-color:#40916c}
 button.primary:hover{background:#357a5c}
-#clock{font-variant-numeric:tabular-nums;font-size:18px;color:var(--hi)}
+#clock{font-variant-numeric:tabular-nums;font-size:16px;color:var(--hi)}
 #status{color:var(--mute);font-size:13px;margin-left:auto}
-#tl{width:100%;height:44px;display:block;cursor:pointer;background:#10141a;border-bottom:1px solid var(--line)}
-main{flex:1;display:flex;flex-direction:column;gap:10px;padding:10px 16px 16px;min-height:0}
+#tl{width:100%;height:32px;flex:none;display:block;cursor:pointer;background:#10141a;border-bottom:1px solid var(--line)}
+main{flex:1;display:flex;flex-direction:column;gap:6px;padding:6px 10px 8px;min-height:0;overflow:hidden}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;position:relative;overflow:hidden}
 .panel h2{margin:0;position:absolute;left:10px;top:6px;font-size:11px;font-weight:500;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;z-index:2}
-#textp{flex:1 1 40vh;min-height:230px;display:flex;flex-direction:column}
+#textp{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
 #phase{position:absolute;right:12px;top:6px;font-size:12px;color:var(--hi)}
 #legend{position:absolute;right:12px;bottom:34px;font:700 16px ui-monospace,Menlo,Consolas,monospace;z-index:2}
-#line{flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:.1em .2em;padding:28px 16px 6px;
+#line{flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:.1em .2em;padding:22px 10px 4px;
   font:700 80px/1.25 ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;overflow:hidden}
 .w{display:inline-block;width:calc(var(--n)*1ch);text-align:center;margin:0 .22em;white-space:nowrap;
   transition:opacity .15s}
@@ -41,21 +41,24 @@ main{flex:1;display:flex;flex-direction:column;gap:10px;padding:10px 16px 16px;m
 .w.now .c.sung{box-shadow:0 .09em 0 0 var(--hi)}
 .w.now .c.act{background:rgba(255,230,110,.28)}
 #nextl{padding:0 16px 8px;color:var(--dim);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#bottom{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
-#bottom .panel{height:300px}
+#bottom{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;height:36dvh;flex:none}
+#bottom .panel{height:auto;min-height:0}
+@media (max-aspect-ratio:1/1){#btip,#bair{display:none}#bkind{font-size:clamp(14px,2.4dvh,20px)}#bdesc{margin-top:2px}#bottom{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:34dvh}}
 canvas.fill{width:100%;height:100%;display:block}
-#breath{padding:30px 14px 10px 64px;height:100%}
-#lung{position:absolute;left:14px;top:30px;bottom:14px;width:30px;background:#262c34;border-radius:4px;overflow:hidden}
+#breath{padding:24px 8px 8px 44px;height:100%;overflow:hidden}
+#lung{position:absolute;left:8px;top:24px;bottom:8px;width:24px;background:#262c34;border-radius:4px;overflow:hidden}
 #lungf{position:absolute;left:0;right:0;bottom:0;background:#6ebaff;transition:height .1s,background .2s}
-#bkind{font-size:26px;font-weight:700;line-height:1.1}
-#bdesc{margin-top:8px;color:#d2d8de}
-#btip{margin-top:10px;color:#9aa6b2;font-size:13px}
-#bair{position:absolute;left:64px;bottom:10px;font-size:13px}
+#bkind{font-size:clamp(16px,3.2dvh,26px);font-weight:700;line-height:1.1}
+#bdesc{margin-top:4px;color:#d2d8de;font-size:clamp(11px,1.8dvh,15px)}
+#btip{margin-top:6px;color:#9aa6b2;font-size:clamp(10px,1.6dvh,13px)}
+#bair{position:absolute;left:44px;bottom:6px;font-size:11px}
 #dolor{height:12px;background:#262c34;border-radius:6px;overflow:hidden;position:relative}
 #dolorf{height:100%;background:var(--bad);width:0}
 #dolorl{position:absolute;left:8px;top:-1px;font-size:10px;font-weight:700}
-details{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
-summary{cursor:pointer;color:var(--mute)}
+#cfgp{display:none;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);overflow:auto;padding:12px}
+#cfgp.open{display:block}
+#cfgp .box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:900px;margin:0 auto}
+@media (max-width:700px),(max-height:520px){header h1,#status{display:none}#nextl{font-size:12px}}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 24px;margin-top:10px}
 .grid label{display:flex;align-items:center;gap:8px;font-size:14px}
 .grid input[type=range]{flex:1;min-width:80px}
@@ -75,6 +78,7 @@ summary{cursor:pointer;color:var(--mute)}
   <button id="btest">🔊 Probar sonido</button>
   <span id="aud" style="color:#f90;font-size:12px"></span>
   <button id="bmute">Guía: activa</button>
+  <button id="bcfg">⚙ Ajustes</button>
   <span id="clock">00:00 / 40:00</span>
   <span id="status"></span>
 </header>
@@ -97,13 +101,13 @@ summary{cursor:pointer;color:var(--mute)}
       <div id="bair"></div></div>
     <div class="panel"><h2>Amplitud / envolvente</h2><canvas class="fill" id="cenv"></canvas></div>
   </section>
-  <details id="cfg"><summary>Ajustes</summary>
+  <div id="cfgp"><div class="box"><button id="bclose" class="primary">Cerrar ✕</button>
     <div class="grid" id="cfgGrid"></div>
     <p class="note">Los datos del radar son <b>simulados</b>: una curva de intensidad de toda la sesión (calma, ondas de tensión,
     clímax hacia el 80 %, caída, silencio) con pausas de reposo, que mueve el tempo, el dolor, el tono, la amplitud y la aspereza igual que el radar real.
     El tempo de cada verso queda fijado al empezarlo. La deformación sigue el arco inicio → tensión → «macho» final → silencio tenso.
     <br><b>Cuida la voz:</b> la voz rota o sin aliento se hace sin forzar la garganta; si hay molestia o ronquera, para y descansa.</p>
-  </details>
+  </div></div>
 </main>
 <script>
 (() => {
@@ -563,17 +567,19 @@ function drawMouth() {
   if (kind === 'rasp' || kind === 'quiebra' || kind === 'corte') tense = true;
   const info = MOUTH[key], mw0 = info[0], mh0 = Math.min(1.1, info[1] * (0.6 + 0.7 * S.boca));
   S.mw += (mw0 - S.mw) * 0.35; S.mh += (mh0 - S.mh) * 0.35;
-  const cx = W / 2, cy = H * 0.45, mw = S.mw * W * 0.8, mh = Math.max(6, S.mh * H * 0.5);
+  g.font = '12px system-ui'; const nl = (() => { let n = 1, line = ''; for (const w of info[2].split(' ')) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > W - 24 && line) { n++; line = w; } else line = t; } return n; })();
+  const txtH = nl * 15 + 8, avail = Math.max(30, H - txtH - 20), pad = avail < 90 ? 12 : 26;
+  const cx = W / 2, cy = 20 + avail / 2, mw = Math.min(S.mw * W * 0.8, W - pad - 20), mh = Math.max(5, Math.min(S.mh * avail * 0.8, avail - pad - 4));
   const oval = (x, y, w, h, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(x, y, w / 2, h / 2, 0, 0, 7); g.fill(); };
-  oval(cx, cy, mw + 26, mh + 26, '#be4655'); oval(cx, cy, mw, mh, '#1e060c');
+  oval(cx, cy, mw + pad, mh + pad, '#be4655'); oval(cx, cy, mw, mh, '#1e060c');
   if (mh > 30) oval(cx, cy + mh * 0.27, mw * 0.6, mh * 0.42, '#cd6978');
   if (key === 'i') { g.fillStyle = '#f0f0eb'; g.fillRect(cx - mw * 0.42, cy - mh * 0.5 + 2, mw * 0.84, Math.max(4, mh * 0.4)); }
   if (tense) { g.strokeStyle = '#ff9646'; g.lineWidth = 3; [-1, 1].forEach(sg => { g.beginPath();
     g.moveTo(cx + sg * (mw / 2 + 22), cy - 18); g.lineTo(cx + sg * (mw / 2 + 36), cy - 34);
     g.moveTo(cx + sg * (mw / 2 + 22), cy + 18); g.lineTo(cx + sg * (mw / 2 + 36), cy + 34); g.stroke(); }); }
-  if (vw) { g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--' + vw); g.font = '700 40px ui-monospace,monospace'; g.textAlign = 'left'; g.fillText(LET[vw], 14, 66); }
-  g.fillStyle = '#c8d0d8'; g.font = '13px system-ui'; g.textAlign = 'left';
-  wrapText(g, info[2], 12, H - 58, W - 24, 17);
+  if (vw) { g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--' + vw); g.font = '700 28px ui-monospace,monospace'; g.textAlign = 'left'; g.fillText(LET[vw], 12, 52); }
+  g.fillStyle = '#c8d0d8'; g.font = '12px system-ui'; g.textAlign = 'left';
+  wrapText(g, info[2], 12, H - txtH + 12, W - 24, 15);
 }
 function wrapText(g, text, x, y, maxW, lh) { const words = text.split(' '); let line = '';
   for (const w of words) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > maxW && line) { g.fillText(line, x, y); y += lh; line = w; } else line = t; }
@@ -649,6 +655,8 @@ function seek(frac) {
 }
 $('bstart').onclick = () => toggleRun();
 $('btest').onclick = testTone;
+$('bcfg').onclick = () => $('cfgp').classList.add('open');
+$('bclose').onclick = () => $('cfgp').classList.remove('open');
 $('bnext').onclick = () => { cancelWord(); sched.length = 0; S.state = 'verso'; S.acc = 9; if (!S.running) toggleRun(true); };
 $('bmute').onclick = () => { cfg.mute = !cfg.mute; $('bmute').textContent = 'Guía: ' + (cfg.mute ? 'silenciada' : 'activa'); };
 $('tl').onclick = e => { const r = $('tl').getBoundingClientRect(); seek((e.clientX - r.left) / r.width); };
