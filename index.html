@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canto: práctica de 40 minutos</title>
+<style>
+:root{
+  --bg:#0c0e12; --panel:#161a20; --line:#2c343c; --ink:#ebeef2; --mute:#8a96a3; --dim:#56606b;
+  --hi:#ffe66e; --u:#a082ff; --s:#50d7e1; --a:#ff9646; --i:#ffe15a; --ok:#6edc82; --bad:#ff5a5a;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  display:flex;flex-direction:column;min-height:100vh}
+header{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.02em}
+button{font:inherit;color:var(--ink);background:#222a33;border:1px solid #3a4550;border-radius:6px;padding:7px 14px;cursor:pointer}
+button:hover{background:#2b3541}
+button.primary{background:#2d6a4f;border-color:#40916c}
+button.primary:hover{background:#357a5c}
+#clock{font-variant-numeric:tabular-nums;font-size:18px;color:var(--hi)}
+#status{color:var(--mute);font-size:13px;margin-left:auto}
+#tl{width:100%;height:44px;display:block;cursor:pointer;background:#10141a;border-bottom:1px solid var(--line)}
+main{flex:1;display:flex;flex-direction:column;gap:10px;padding:10px 16px 16px;min-height:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;position:relative;overflow:hidden}
+.panel h2{margin:0;position:absolute;left:10px;top:6px;font-size:11px;font-weight:500;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;z-index:2}
+#textp{flex:1 1 40vh;min-height:230px;display:flex;flex-direction:column}
+#phase{position:absolute;right:12px;top:6px;font-size:12px;color:var(--hi)}
+#legend{position:absolute;right:12px;bottom:34px;font:700 16px ui-monospace,Menlo,Consolas,monospace;z-index:2}
+#line{flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:.1em .2em;padding:28px 16px 6px;
+  font:700 80px/1.25 ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;overflow:hidden}
+.w{display:inline-block;width:calc(var(--n)*1ch);text-align:center;margin:0 .22em;white-space:nowrap;
+  transition:opacity .15s}
+.w .wi{display:inline-block;font-size:calc(var(--f,.85)*1em)}
+.w.next{opacity:.92}.w.done{opacity:.38}
+.c{display:inline-block;color:var(--ink);border-radius:3px}
+.c.v-u{color:var(--u)}.c.v-s{color:var(--s)}.c.v-a{color:var(--a)}.c.v-i{color:var(--i)}
+.c.sep{color:#96a0aa}
+.w.now .c:not(.sung){opacity:.8}
+.w.now .c.sung{box-shadow:0 .09em 0 0 var(--hi)}
+.w.now .c.act{background:rgba(255,230,110,.28)}
+#nextl{padding:0 16px 8px;color:var(--dim);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bottom{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+#bottom .panel{height:300px}
+canvas.fill{width:100%;height:100%;display:block}
+#breath{padding:30px 14px 10px 64px;height:100%}
+#lung{position:absolute;left:14px;top:30px;bottom:14px;width:30px;background:#262c34;border-radius:4px;overflow:hidden}
+#lungf{position:absolute;left:0;right:0;bottom:0;background:#6ebaff;transition:height .1s,background .2s}
+#bkind{font-size:26px;font-weight:700;line-height:1.1}
+#bdesc{margin-top:8px;color:#d2d8de}
+#btip{margin-top:10px;color:#9aa6b2;font-size:13px}
+#bair{position:absolute;left:64px;bottom:10px;font-size:13px}
+#dolor{height:12px;background:#262c34;border-radius:6px;overflow:hidden;position:relative}
+#dolorf{height:100%;background:var(--bad);width:0}
+#dolorl{position:absolute;left:8px;top:-1px;font-size:10px;font-weight:700}
+details{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+summary{cursor:pointer;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 24px;margin-top:10px}
+.grid label{display:flex;align-items:center;gap:8px;font-size:14px}
+.grid input[type=range]{flex:1;min-width:80px}
+.grid input[type=number]{width:64px;background:#10141a;color:var(--ink);border:1px solid #3a4550;border-radius:4px;padding:3px 6px}
+.grid select{background:#10141a;color:var(--ink);border:1px solid #3a4550;border-radius:4px;padding:3px 6px}
+.val{min-width:46px;text-align:right;color:var(--hi);font-variant-numeric:tabular-nums}
+.note{color:var(--mute);font-size:13px;margin-top:10px;max-width:90ch}
+#fin{display:none;position:absolute;inset:0;background:rgba(12,14,18,.92);z-index:5;align-items:center;justify-content:center;
+  font-size:28px;text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>CANTO · práctica</h1>
+  <button id="bstart" class="primary">▶ Empezar</button>
+  <button id="bnext">Siguiente verso</button>
+  <button id="bmute">Guía: activa</button>
+  <span id="clock">00:00 / 40:00</span>
+  <span id="status"></span>
+</header>
+<canvas id="tl" title="Clic para saltar a otro punto de la sesión"></canvas>
+<main>
+  <section class="panel" id="textp">
+    <h2 id="vtitle">Verso</h2><div id="phase"></div>
+    <div id="legend"><span style="color:var(--u)">u</span> <span style="color:var(--s)">ə</span> <span style="color:var(--a)">a</span> <span style="color:var(--i)">i</span></div>
+    <div id="line"></div>
+    <div id="nextl"></div>
+    <div id="fin">Fin de la sesión.<br>Descansa la voz y bebe agua.</div>
+  </section>
+  <div id="dolor"><div id="dolorf"></div><span id="dolorl">DOLOR</span></div>
+  <section id="bottom">
+    <div class="panel"><h2>Tono que debe emitir</h2><canvas class="fill" id="cpitch"></canvas></div>
+    <div class="panel"><h2>Boca</h2><canvas class="fill" id="cmouth"></canvas></div>
+    <div class="panel"><h2>Aliento / respiración</h2>
+      <div id="lung"><div id="lungf"></div></div>
+      <div id="breath"><div id="bkind">—</div><div id="bdesc"></div><div id="btip"></div></div>
+      <div id="bair"></div></div>
+    <div class="panel"><h2>Amplitud / envolvente</h2><canvas class="fill" id="cenv"></canvas></div>
+  </section>
+  <details id="cfg"><summary>Ajustes</summary>
+    <div class="grid" id="cfgGrid"></div>
+    <p class="note">Los datos del radar son <b>simulados</b>: una curva de intensidad de toda la sesión (calma, ondas de tensión,
+    clímax hacia el 80 %, caída, silencio) con pausas de reposo, que mueve el tempo, el dolor, el tono, la amplitud y la aspereza igual que el radar real.
+    El tempo de cada verso queda fijado al empezarlo. La deformación sigue el arco inicio → tensión → «macho» final → silencio tenso.
+    <br><b>Cuida la voz:</b> la voz rota o sin aliento se hace sin forzar la garganta; si hay molestia o ronquera, para y descansa.</p>
+  </details>
+</main>
+<script>
+(() => {
+'use strict';
+const LINES = ["Tristes presentimientos de lo que ha de acontecer.", "Con razon ó sin ella.", "Lo mismo.", "Las mugeres dan valor.", "Y son fieras.", "Bien te se está.", "Que valor!", "Siempre sucede.", "No quieren.", "Tampoco.", "Ni por esas.", "Para eso habeis nacido.", "Amarga presencia.", "Duro es el paso!", "Y no hai remedio.", "Se aprovechan.", "No se convienen.", "Enterrar y callar.", "Ya no hay tiempo.", "Curarlos, y á otra.", "Será lo mismo.", "Tanto y mas.", "Lo mismo en otras partes.", "Aun podrán servir.", "Tambien estos.", "No se puede mirar.", "Caridad.", "Populacho.", "Lo merecia.", "Estragos de la guerra.", "Fuerte cosa es!", "Por qué?", "Qué hai que hacer mas?", "Por una navaja.", "No se puede saber por qué.", "Tampoco.", "Esto es peor.", "Bárbaros!", "Grande hazaña! Con muertos!", "Algun partido saca.", "Escapan entre las llamas.", "Todo va revuelto.", "Tambien esto.", "Yo lo vi.", "Y esto tambien.", "Esto es malo.", "Así sucedió.", "Cruel lástima!", "Caridad de una muger.", "Madre infeliz!", "Gracias á la almorta.", "No llegan á tiempo.", "Espiró sin remedio.", "Clamores en vano.", "Lo peor es pedir.", "Al cementerio.", "Sanos y enfermos.", "No hay que dar voces.", "De qué sirve una taza?", "No hay quien los socorra.", "Si son de otro linage.", "Las camas de la muerte.", "Muertos recogidos.", "Carretadas al cementerio.", "Qué alboroto es este?", "Extraña devocion!", "Esta no lo es menos.", "Que locura!", "Nada. Ello dirá.", "No saben el camino.", "Contra el bien general.", "Las resultas.", "Gatesca pantomima.", "Esto es lo peor!", "Farándula de charlatanes.", "El buitre carnívoro.", "Que se rompe la cuerda.", "Se defiende bien.", "Murió la Verdad.", "Se resucitará?"];
+const Q = new URLSearchParams(location.search);
+const SPEED = Math.max(0.1, parseFloat(Q.get('speed')) || 1);   // solo para pruebas: ?speed=20 acelera la sesión
+const $ = id => document.getElementById(id);
+const clip = (x, a, b) => Math.min(b, Math.max(a, x));
+const lin = (x, a, b, c, d) => c + (d - c) * clip((x - a) / (b - a), 0, 1);
+const linexp = (x, a, b, c, d) => c * Math.pow(d / c, clip((x - a) / (b - a), 0, 1));
+const coin = p => Math.random() < p;
+const rr = (a, b) => a + Math.random() * (b - a);
+const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+const wchoose = (items, w) => { let s = w.reduce((a, b) => a + Math.max(0, b), 0), r = Math.random() * s;
+  for (let i = 0; i < items.length; i++) { r -= Math.max(0, w[i]); if (r <= 0) return items[i]; } return items[items.length - 1]; };
+const NOTES = ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+const noteName = m => { const k = Math.round(m); return NOTES[((k % 12) + 12) % 12] + (Math.floor(k / 12) - 1); };
+const dynMark = a => ['pp','p','mp','mf','f','ff'][Math.min(5, Math.floor(clip(a, 0, 0.999) * 6))];
+
+// ------------------------------------------------------------------ ajustes
+const opt = { subst: true, stretch: true, aspire: true, stutter: true, interj: true, air: true, couple: true, glide: true,
+  arc: true, unint: true, cuts: true, nonverb: true, fixTempo: true };
+const OPTLAB = { subst: 'sustituir vocales (u, schwa, a, i)', stretch: 'alargar vocales', aspire: 'aspirar s→h, r vibrada',
+  stutter: 'tartamudeo', interj: 'interjección «Ay»', air: 'aire y respiración', couple: 'dolor sube tono y volumen',
+  glide: 'glissando de llanto', arc: 'arco por verso (tensión y macho final)', unint: 'ininteligibilidad progresiva',
+  cuts: 'cortes bruscos', nonverb: 'sonidos no verbales', fixTempo: 'tempo fijo por verso' };
+const cfg = { lo: 62, hi: 84, root: 4, scaleIdx: 0, guide: 0.7, guideRasp: 0.35, fast: 2.5, slow: 10, tau: 2,
+  pauseBelow: 0.04, durMin: 40, maxSing: 6, attMul: 1, relMul: 1, mute: false };
+const SCALES = [['Frigia dominante (flamenco)', [0,1,4,5,7,8,10]], ['Menor armónica', [0,2,3,5,7,8,11]],
+  ['Pentatónica menor', [0,3,5,7,10]], ['Cromática', [0,1,2,3,4,5,6,7,8,9,10,11]], ['Libre (sin cuantizar)', null]];
+const quant = m => { const deg = SCALES[cfg.scaleIdx][1]; if (!deg) return m;
+  const x = m - cfg.root, oc = Math.floor(x / 12), r = x - oc * 12; let best = deg[0], bd = 99;
+  for (const d of deg.concat([12])) { const e = Math.abs(r - d); if (e < bd) { bd = e; best = d; } }
+  return cfg.root + oc * 12 + best; };
+
+// --------------------------------------------------------------- tablas
+const VM = {}; 'aá'.split('').forEach(c => VM[c] = 'a'); 'eé'.split('').forEach(c => VM[c] = 's');
+'ií'.split('').forEach(c => VM[c] = 'i'); 'oóuúü'.split('').forEach(c => VM[c] = 'u');
+const LET = { a: 'a', s: 'ə', i: 'i', u: 'u' };
+const PUNCT = ['.', ',', ';', ':', '!', '?', '¡', '¿', '…', '"', '(', ')'];
+const FORM = { a: [800,1200,2800], s: [500,1500,2500], i: [270,2300,3000], u: [300,800,2200] };
+const NZ = { h: 2200, s: 6500, x: 1800, r: 1400, t: 3500 };
+const KIND = {
+  voz: ['VOZ', 'emite el tono guía', '#6edc82'],
+  rasp: ['RASPA', 'empuja aire y aprieta suave la glotis: voz rota, carrasposa (sin forzar)', '#ff9646'],
+  quiebra: ['SE QUIEBRA', 'la voz se corta y cae, sin aliento', '#ff5a5a'],
+  corte: ['CORTE', 'la voz se corta de golpe a mitad de sonido', '#ff5a5a'],
+  exhala: ['EXHALA', 'suelta el aire, voz soplada (hhh), como un suspiro-llanto', '#78beff'],
+  inhala: ['INSPIRA', 'corto, entrecortado, como un sollozo', '#ffe66e'],
+  apnea: ['RETÉN', 'sin respirar: garganta cerrada, sin aire', '#e65ac8'],
+  cons: ['AIRE', 'consonante soplada / aspirada', '#78beff'],
+  click: ['CLIC', 'chasquido de lengua, seco', '#c8c8ff'],
+  soplo: ['SOPLO', 'soplo sin voz, labios casi cerrados', '#78beff'],
+  ladrido: ['LADRIDO', 'golpe gutural corto, empujado desde el vientre', '#ff9646'],
+  reposo: ['REPOSO', 'sin movimiento: respira, deja caer los hombros', '#788490'],
+  verso: ['FIN DE VERSO', 'inspira antes del siguiente verso', '#ffe66e']
+};
+const TIPS = { voz: 'apoya en el vientre; el sonido sube a la garganta', rasp: 'el aire circula en circuito cerrado: casi sin tomar aire nuevo',
+  quiebra: 'traga el sonido: que caiga al vientre', corte: 'cierra la glotis: silencio abrupto', exhala: 'vacía los pulmones, no tomes más aire',
+  inhala: 'inspira por la boca, corto; no llenes', apnea: 'silencio tenso: aguanta, no respires', cons: 'aire soplado entre las sílabas' };
+const MOUTH = {
+  a: [0.62, 0.90, 'A: abre en vertical, mandíbula caída, lengua plana y garganta abierta (quejío: ay)'],
+  u: [0.30, 0.30, 'U: labios en bocina, boca pequeña y redonda, lengua atrás; sonido oscuro de lamento'],
+  i: [0.95, 0.16, 'I: comisuras estiradas, boca ancha y poco abierta; sonido agudo y tenso, fino'],
+  s: [0.50, 0.40, 'SCHWA: boca a medio abrir, relajada, lengua neutra; gemido sordo, gruñido'],
+  cerrada: [0.55, 0.03, 'Labios cerrados y apretados, garganta cerrada'],
+  inhala: [0.45, 0.32, 'Boca entreabierta, aspira rápido por la boca (sollozo)'],
+  exhala: [0.58, 0.32, 'Boca abierta relajada, deja salir el aire como un suspiro (hhh)'],
+  ay: [0.78, 1.0, 'AY flamenco: boca muy abierta, mandíbula caída, garganta abierta y aire']
+};
+
+// ------------------------------------------------------------ radar simulado
+const total = () => cfg.durMin * 60;
+const CURVE = [[0,.12],[.08,.28],[.25,.5],[.4,.62],[.55,.72],[.7,.88],[.82,1.0],[.86,.96],[.89,.38],[.93,.22],[1,.04]];
+const GAPS = [.15, .30, .45, .60, .74];      // pausas de reposo (fracción de la sesión), 20 s cada una
+const GAPLEN = 20;
+function intensityAt(T) {
+  const u = clip(T / total(), 0, 1); let v = 0;
+  for (let i = 1; i < CURVE.length; i++) if (u <= CURVE[i][0]) { const a = CURVE[i-1], b = CURVE[i];
+    v = a[1] + (b[1] - a[1]) * (u - a[0]) / (b[0] - a[0]); break; }
+  v += 0.10 * Math.sin(2 * Math.PI * T / 130) * Math.min(1, v * 2);
+  for (const g of GAPS) { const s = g * total(); if (T >= s && T < s + GAPLEN) { const e = Math.min((T - s) / 2, (s + GAPLEN - T) / 2, 1); v *= (1 - e); } }
+  return clip(v, 0, 1);
+}
+const nz1 = t => 0.5 + 0.5 * (Math.sin(t * 0.7 + 1.3) * 0.5 + Math.sin(t * 1.9 + 0.4) * 0.3 + Math.sin(t * 0.23 + 2.1) * 0.2);
+const SIM = { T: 0, x: 0, dir: 1, vel: 0.1, dist: 2.2, z: 0.2 };
+function simStep(dt) {
+  SIM.T += dt;
+  const I = intensityAt(SIM.T), target = I * (0.65 + 0.35 * nz1(SIM.T));
+  SIM.vel += (target - SIM.vel) * Math.min(1, dt / 1.2);
+  SIM.x += SIM.dir * SIM.vel * dt * 1.3;
+  if (Math.abs(SIM.x) > 1.6) { SIM.dir = -SIM.dir; SIM.x = clip(SIM.x, -1.6, 1.6); }
+  SIM.dist = clip(2.7 - 1.5 * I + 0.5 * Math.sin(SIM.T / 37) + 0.2 * nz1(SIM.T * 0.4), 0.4, 3);
+  SIM.z = 0.2 + 0.5 * Math.sin(SIM.T / 23);
+}
+// fuentes 0..1 y destinos (mapeo por defecto del programa de SuperCollider)
+function sources() {
+  const vel = clip(SIM.vel, 0, 1), x = (SIM.x + 1.6) / 3.2, dist = clip((SIM.dist - 0.3) / 2.7, 0, 1), z = clip((SIM.z + 1) / 2, 0, 1);
+  return { vel, x, dist, z,
+    ritmo: vel, pausas: 1 - vel, tono: x, amp: 1 - dist, dolor: vel, rasp: 1 - dist, boca: z, pan: x };
+}
+
+// ------------------------------------------------------------------ estado
+const S = { state: 'verso', acc: 3, per: 4, spr: 0.3, air: 1, lw: [], wi: 0, lineNo: 0, bag: [], seg: null, curCi: -1,
+  dolor: 0, ampNow: 0.5, rasp: 0, boca: 0.5, midiBase: 69, nrS: 0, verseNr: 0, phase: '', token: 0,
+  mw: 0.5, mh: 0.1, running: false, E: 0, started: false, finished: false };
+const sched = [];
+const at = (dt, fn, token) => sched.push({ t: S.E + dt, fn: () => { if (token === undefined || token === S.token) fn(); } });
+const cancelWord = () => { S.token++; };
+
+// -------------------------------------------------------------------- audio
+let ctx = null, master = null, noiseBuf = null;
+function audioInit() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 8;
+  master = ctx.createGain(); master.gain.value = 0.9; master.connect(comp); comp.connect(ctx.destination);
+  noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+}
+function noiseSrc() { const n = ctx.createBufferSource(); n.buffer = noiseBuf; n.loop = true; return n; }
+function panNode(p) { if (ctx.createStereoPanner) { const n = ctx.createStereoPanner(); n.pan.value = clip(p, -1, 1); return n; } return ctx.createGain(); }
+function voice(o) {
+  if (!ctx || cfg.mute) return;
+  const t0 = ctx.currentTime + 0.01, dur = o.att + o.sus + o.rel, amp = o.amp;
+  const osc = ctx.createOscillator(); osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(o.f0, t0); osc.frequency.exponentialRampToValueAtTime(Math.max(40, o.f1), t0 + dur);
+  const sine = ctx.createOscillator(); sine.type = 'sine';
+  sine.frequency.setValueAtTime(o.f0, t0); sine.frequency.exponentialRampToValueAtTime(Math.max(40, o.f1), t0 + dur);
+  const lfo = ctx.createOscillator(); lfo.frequency.value = 5.4 + o.rasp * 2;
+  const lg = ctx.createGain(); lg.gain.setValueAtTime(0, t0); lg.gain.linearRampToValueAtTime(o.f0 * 0.009 * (1 - o.rasp * 0.6), t0 + o.att + o.sus * 0.5);
+  lfo.connect(lg); lg.connect(osc.frequency); lg.connect(sine.frequency);
+  const mix = ctx.createGain(); mix.gain.value = 0.35; osc.connect(mix);
+  let extra = [];
+  if (o.rasp > 0.01) {
+    const jit = ctx.createOscillator(); jit.type = 'triangle'; jit.frequency.value = 31 + Math.random() * 20;
+    const jg = ctx.createGain(); jg.gain.value = o.f0 * 0.025 * o.rasp; jit.connect(jg); jg.connect(osc.frequency); extra.push(jit);
+    const sub = ctx.createOscillator(); sub.type = 'square'; sub.frequency.setValueAtTime(o.f0 * 0.5, t0);
+    sub.frequency.exponentialRampToValueAtTime(Math.max(20, o.f1 * 0.5), t0 + dur);
+    const sg = ctx.createGain(); sg.gain.value = 0.12 * o.rasp; sub.connect(sg); sg.connect(mix); extra.push(sub);
+  }
+  const nzAmt = o.breath * 0.7 + o.rasp * 0.5;
+  let ns = null;
+  if (nzAmt > 0.01) { ns = noiseSrc(); const ng = ctx.createGain(); ng.gain.value = nzAmt * 0.5; ns.connect(ng); ng.connect(mix); }
+  const sum = ctx.createGain();
+  [[o.fa, 5, 1.0], [o.fb, 6, 0.8], [o.fc, 7, 0.5]].forEach(([f, q, g]) => {
+    const b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q;
+    const bg = ctx.createGain(); bg.gain.value = g * 2.2; mix.connect(b); b.connect(bg); bg.connect(sum); });
+  const flut = ctx.createGain(); flut.gain.value = 1 - o.rasp * 0.35;
+  if (o.rasp > 0.01) { const fl = ctx.createOscillator(); fl.frequency.value = 38; const fg = ctx.createGain(); fg.gain.value = o.rasp * 0.3; fl.connect(fg); fg.connect(flut.gain); extra.push(fl); }
+  sum.connect(flut);
+  const sg2 = ctx.createGain(); sg2.gain.value = 0.18; sine.connect(sg2); sg2.connect(flut);
+  const env = ctx.createGain(); env.gain.setValueAtTime(0, t0);
+  env.gain.linearRampToValueAtTime(amp, t0 + Math.max(0.005, o.att));
+  env.gain.setValueAtTime(amp, t0 + o.att + o.sus);
+  env.gain.linearRampToValueAtTime(0, t0 + dur);
+  flut.connect(env); const pn = panNode(o.pan); env.connect(pn); pn.connect(master);
+  const stopAt = t0 + dur + 0.05;
+  [osc, sine, lfo, ns, ...extra].forEach(n => { if (n) { n.start(t0); n.stop(stopAt); } });
+}
+function airBurst(o) {
+  if (!ctx || cfg.mute) return;
+  const t0 = ctx.currentTime + 0.01, dur = Math.max(0.02, o.dur), att = Math.min(o.att || 0.005, dur * 0.5);
+  const n = noiseSrc(), b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = clip(o.freq, 200, 12000); b.Q.value = 1 / (o.rq || 0.5);
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(o.amp * 2.5, t0 + att);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  const pn = panNode(o.pan || 0); n.connect(b); b.connect(g); g.connect(pn); pn.connect(master);
+  n.start(t0); n.stop(t0 + dur + 0.05);
+}
+
+// ------------------------------------------------------- texto y deformación
+const ch = (c, kd, vw, rep, n, sh, nz) => ({ ch: c, kd, vw, rep, n, sh, nz,
+  disp: kd === 'v' ? c.repeat(n) : c, w: kd === 'v' ? n : Array.from(c).length });
+
+function deform(word, d, strong, ar) {
+  const chars = Array.from(word), out = [], n = chars.length;
+  let pSub = opt.subst ? 0.12 + 0.83 * d : 0; if (strong) pSub = 0;
+  const wts = [1 + 3 * d, 1 + 3 * d, 2 - 1.2 * d, 1 - 0.6 * d];
+  if (opt.air && !strong && n > 0 && VM[chars[0].toLowerCase()] && coin(d * 0.45)) out.push(ch('h', 'c', null, false, 1, false, 'h'));
+  chars.forEach((c, i) => {
+    let vk = VM[c.toLowerCase()];
+    if (n === 1 && (c === 'y' || c === 'Y')) vk = 'i';
+    if (vk) {
+      let sung = vk, shown = c, rep = false, k = 1;
+      if (coin(pSub)) { sung = wchoose(['u', 's', 'a', 'i'], wts); shown = LET[sung]; rep = true; }
+      if (opt.stretch) { k = 1 + Math.floor(d * 3 * Math.random()); if (strong) k += 3; }
+      out.push(ch(shown, 'v', sung, rep, k, false, null));
+    } else if (PUNCT.includes(c)) {
+      out.push(ch(c, 'p', null, false, 1, false, null));
+    } else {
+      let shown = c, nz = 't'; const lc = c.toLowerCase();
+      if (c === 's') { nz = 's'; if (opt.aspire && coin(d * 0.7) && i > 0) { shown = 'h'; nz = 'h'; } }
+      else if (lc === 'r') { nz = 'r'; if (coin(d * 0.5)) shown = c + c; }
+      else if ('hjxg'.includes(lc)) nz = 'x';
+      if (!(opt.unint && i > 0 && coin(ar.u * 0.45))) out.push(ch(shown, 'c', null, false, 1, false, nz));
+    }
+  });
+  let last = out[out.length - 1];
+  if (opt.air && !strong && last && last.kd === 'v' && coin(d * 0.4)) out.push(ch('h', 'c', null, false, 1, false, 'h'));
+  if (opt.unint && !strong && coin(ar.u * 0.4)) {
+    const fi = out.findIndex(c => c.kd === 'v');
+    if (fi >= 0 && out.length > fi + 2) { out.splice(fi + 1 + (coin(0.5) ? 1 : 0)); const l = out[fi];
+      out[fi] = ch(l.ch, 'v', l.vw, l.rep, l.n + 2, l.sh, null); }
+  }
+  const fi = out.findIndex(c => c.kd === 'v');
+  if (opt.stutter && !strong && fi >= 0 && fi <= 3 && coin(d * 0.35 * (ar.p < 0.3 ? 1.6 : 1))) {
+    const k = 1 + Math.round(d * 1.6);
+    const pre = out.slice(0, fi + 1).map(c => ch(c.ch, c.kd, c.vw, c.rep, 1, true, c.nz));
+    let res = out.slice();
+    for (let j = 0; j < k; j++) res = pre.concat([ch('-', 'sep', null, false, 1, true, null)], res);
+    return res;
+  }
+  return out;
+}
+function planWord(word, d, strong, ar) {
+  const chars = deform(word, d, strong, ar), segs = []; let run = [];
+  const flush = () => { if (run.length) { const c0 = chars[run[0]];
+    segs.push({ kd: 'cons', w: Math.min(0.7, 0.18 * run.length * (c0.sh ? 0.5 : 1)), ci: run[0], cj: run[run.length - 1], nz: c0.nz, dur: 0 }); run = []; } };
+  chars.forEach((c, i) => {
+    if (c.kd === 'sep') { flush(); segs.push({ kd: 'gap', w: 0.1, ci: i, cj: i, dur: 0 }); }
+    else if (c.kd === 'p') { /* sin sonido */ }
+    else if (c.kd === 'c') run.push(i);
+    else if (c.kd === 'v') { flush(); segs.push({ kd: 'vowel', vw: c.vw, w: 1 + (c.n - 1) * 0.8, ci: i, cj: i, sh: c.sh, dur: 0 }); }
+  });
+  flush();
+  return { chars, segs };
+}
+function arc(wi, n, d0, strong) {
+  const nw = Math.max(1, n - 1), last = wi === n - 1; let d = d0;
+  if (strong) d = Math.max(d, 0.85);
+  const pp = opt.arc ? clip(wi / nw, 0, 1) : 0.5;
+  if (opt.arc) { d = clip(d * (0.65 + 0.55 * pp), 0, 1); if (last) d = Math.max(d, 0.6); }
+  let u = opt.unint ? Math.pow(pp, 1.5) * (0.3 + 0.7 * d) : 0;
+  if (last && opt.unint) u = Math.max(u, 0.6);
+  return { d, u, p: pp, last };
+}
+
+// siguiente verso al azar (bolsa barajada), deformado entero para el modo karaoke
+function nextLine() {
+  const d0 = sources().dolor, n0 = LINES.length;
+  S.verseNr = Math.max(S.nrS, cfg.pauseBelow);
+  const refill = () => { S.bag = Array.from({ length: n0 }, (_, i) => i).sort(() => Math.random() - 0.5); };
+  if (!S.bag.length) refill();
+  const i = S.bag.shift();
+  if (!S.bag.length) { refill(); if (S.bag[0] === i) S.bag.push(S.bag.shift()); }
+  S.lineNo++;
+  let words = LINES[i].split(/\s+/).filter(Boolean).map(w => ({ raw: w, strong: false }));
+  if (opt.interj && coin(d0 * 0.3)) words.unshift({ raw: '¡Ay!', strong: true });
+  const n = words.length;
+  S.lw = words.map((e, wi) => { const a = arc(wi, n, d0, e.strong), plan = planWord(e.raw, a.d, e.strong, a);
+    return { raw: e.raw, strong: e.strong, plan, chars: plan.chars, st: 'next', amp: 0.7, wc: plan.chars.reduce((s, c) => s + c.w, 0) }; });
+  S.wi = 0; S.curCi = -1;
+  renderLine();
+}
+
+function startWord(src, per, spr) {
+  const lw = S.lw[S.wi], a = arc(S.wi, S.lw.length, clip(src.dolor, 0, 1), lw.strong), d = a.d;
+  S.phase = !opt.arc ? '' : (a.last ? 'MACHO: voz estrangulada, se corta' : (a.p < 0.3 ? 'inicio: quejidos y balbuceo' : 'tensión creciente'));
+  let amp = src.amp; if (opt.couple) amp = clip(amp + 0.35 * d, 0, 1);
+  let midi = lin(src.tono, 0, 1, cfg.lo, cfg.hi); if (opt.couple) midi += 3 * d;
+  S.midiBase = quant(clip(midi, cfg.lo, cfg.hi));
+  const rasp = clip(src.rasp, 0, 1), boca = clip(src.boca, 0, 1), pan = lin(src.pan, 0, 1, -0.8, 0.8);
+  let wdur = clip(per / (1 + spr), 0.08, cfg.maxSing) * 0.95, pre = null;
+  if (opt.air && per > 1.0) {
+    if (S.air < 0.12) pre = { kind: 'inhala', dur: 0.22 };
+    else if (d > 0.7 && S.air < 0.5 && coin(0.5)) pre = { kind: 'apnea', dur: 0.4 + d * 0.6 };
+  }
+  if (pre) wdur = Math.max(0.1, wdur - pre.dur);
+  const plan = lw.plan, sumw = plan.segs.reduce((s, g) => s + g.w, 0);
+  plan.segs.forEach(g => g.dur = wdur * g.w / Math.max(0.01, sumw));
+  lw.amp = amp; lw.st = 'now'; if (S.wi > 0) S.lw[S.wi - 1].st = 'done';
+  S.dolor = d; S.ampNow = amp; S.rasp = rasp; S.boca = boca;
+  updateWords();
+  singWord(plan, { d, amp, rasp, pan, isLast: a.last, pre });
+  if (opt.cuts && coin(d * 0.12) && per > 0.5) S.acc -= rr(0.4, 1.0);
+  S.wi++;
+}
+
+function singWord(plan, cx) {
+  const token = ++S.token, vowels = plan.segs.filter(s => s.kd === 'vowel'); let off = 0;
+  if (cx.pre) { const p = cx.pre; at(0, () => { p.t0 = S.E; S.seg = p; markChar(-1);
+      if (p.kind === 'inhala') { airBurst({ amp: 0.18 * cfg.guide, dur: p.dur, att: p.dur * 0.7, freq: 2600, rq: 0.6, pan: cx.pan }); S.air = Math.min(1, S.air + inhale()); } }, token);
+    off += p.dur; }
+  plan.segs.forEach(s => {
+    at(off, () => {
+      s.t0 = S.E; S.seg = s; markChar(s.ci);
+      if (s.kd === 'vowel') {
+        const isLastV = vowels[vowels.length - 1] === s, air = S.air; let cutIt = false;
+        let nt = S.midiBase + (s.sh ? 0 : rr(-1.8, 1.8) * (0.4 + 0.6 * (1 - cx.d)));
+        nt = clip(quant(nt), cfg.lo, cfg.hi + 1);
+        let n0 = nt, n1 = nt;
+        if (opt.glide) n0 = nt - (0.7 + 1.6 * cx.d);
+        if (cx.isLast && isLastV) n1 = nt - rr(3, 7);
+        let att = Math.max(0.012, 0.16 - 0.145 * cx.d) * cfg.attMul, rel = (0.10 + 0.22 * cx.d) * (1 + (1 - air) * 0.8) * cfg.relMul;
+        if (cx.isLast && isLastV) rel = s.dur * 0.5;
+        att = Math.min(att, s.dur * 0.4); rel = Math.min(rel, s.dur * 0.55);
+        let sus = Math.max(0.01, s.dur - att - rel);
+        cutIt = opt.cuts && coin(cx.d * 0.16) && s.dur > 0.25 && !isLastV;
+        if (cutIt) { att = Math.min(att, 0.02); sus = s.dur * 0.35; rel = 0.015; }
+        const r = opt.air ? clip(cx.rasp + (1 - air) * 0.5, 0, 1) : cx.rasp, br = opt.air ? clip((1 - air) * 0.8, 0, 1) : 0;
+        let kind = 'voz'; if (r > 0.5) kind = 'rasp';
+        if ((cx.isLast && isLastV) || (opt.air && air < 0.12)) kind = 'quiebra';
+        if (cutIt) kind = 'corte';
+        const fm = FORM[s.vw];
+        Object.assign(s, { n0, n1, att, sus, rel, kind, amp: cx.amp });
+        voice({ f0: mtof(n0), f1: mtof(n1), amp: lin(cx.amp, 0, 1, 0.04, 0.45) * cfg.guide, att, sus, rel, pan: cx.pan,
+          fa: fm[0], fb: fm[1], fc: fm[2], rasp: r * cfg.guideRasp / 0.35 * 0.35, breath: br });
+        if (opt.air) S.air = Math.max(0, S.air - s.dur * 0.18 * (0.4 + 1.2 * cx.d));
+      } else if (s.kd === 'cons') {
+        s.kind = 'cons';
+        if (s.dur >= 0.02) airBurst({ amp: (s.nz === 'h' ? 0.12 : 0.2) * lin(cx.amp, 0, 1, 0.3, 1) * cfg.guide, dur: Math.min(0.5, s.dur), att: 0.004,
+          freq: NZ[s.nz] || 3500, rq: 0.5, pan: cx.pan });
+        if (opt.air && s.nz === 'h') S.air = Math.max(0, S.air - s.dur * 0.1);
+      } else s.kind = 'apnea';
+    }, token);
+    off += s.dur;
+  });
+}
+const inhale = () => 0.45 - 0.3 * S.dolor;
+
+function spaceSeq(dur, d, verso) {
+  const token = ++S.token; let seq;
+  if (!opt.air) seq = ['exhala'];
+  else if (verso || (d > 0.65 && S.air < 0.35 && dur > 0.6)) seq = ['apnea', 'inhala'];
+  else if (S.air < 0.5 && dur >= 0.2) seq = ['inhala'];
+  else seq = ['exhala'];
+  if (dur < 0.2) seq = ['exhala'];
+  if (opt.nonverb && !verso && dur >= 0.35 && coin(d * 0.5)) seq.unshift(wchoose(['click', 'soplo', 'ladrido'], [0.4, 0.35, 0.25]));
+  const n = seq.length, each = dur / n;
+  seq.forEach((k, j) => at(j * each, () => {
+    S.seg = { kind: k, dur: each, t0: S.E }; markChar(-1);
+    if (k === 'inhala') { airBurst({ amp: 0.16 * cfg.guide, dur: Math.min(0.4, each), att: Math.min(0.4, each) * 0.7, freq: 2600, rq: 0.6 }); S.air = Math.min(1, S.air + inhale()); }
+    if (k === 'click') airBurst({ amp: 0.3 * cfg.guide, dur: 0.05, att: 0.001, freq: 2400, rq: 0.25 });
+    if (k === 'soplo') airBurst({ amp: 0.18 * cfg.guide, dur: Math.min(0.6, each), att: 0.08, freq: 3200, rq: 0.8 });
+    if (k === 'ladrido') voice({ f0: mtof(cfg.lo + 2), f1: mtof(cfg.lo), amp: 0.3 * cfg.guide, att: 0.005, sus: 0.08, rel: 0.12, pan: 0,
+      fa: 800, fb: 1200, fc: 2800, rasp: 1, breath: 0.3 });
+  }, token));
+}
+
+// --------------------------------------------------------- reloj de ritmo
+const perOf = n => linexp(n, 0, 1, Math.max(cfg.slow, cfg.fast), Math.min(cfg.slow, cfg.fast));
+const versoSlot = per => clip(opt.arc ? 2.5 + 3 * S.dolor : 2.5, 2.5 / Math.max(0.05, per), 8 / Math.max(0.05, per));
+function mainStep(dt) {
+  const src = sources(); let nr = src.ritmo;
+  S.nrS += (nr - S.nrS) * (dt / Math.max(cfg.tau, dt)); nr = S.nrS;
+  if (nr < cfg.pauseBelow) {
+    if (S.state !== 'reposo') { S.state = 'reposo'; S.seg = { kind: 'reposo', dur: 1, t0: S.E }; markChar(-1); cancelWord(); }
+    S.air = Math.min(1, S.air + dt * 0.12); return;
+  }
+  if (S.state === 'reposo') { S.state = S.wi < S.lw.length ? 'space' : 'verso'; S.acc = 5; }
+  if (opt.fixTempo && (S.state === 'word' || S.state === 'space')) nr = S.verseNr;
+  const per = perOf(nr), spr = lin(src.pausas, 0, 1, 0.05, 1.6); S.per = per; S.spr = spr;
+  const slot = S.state === 'word' ? 1 / (1 + spr) : S.state === 'space' ? spr / (1 + spr) : versoSlot(per);
+  S.acc += dt / per;
+  if (S.air < 1) S.air = Math.min(1, S.air + dt * 0.05 * (1 - src.dolor * 0.8));
+  if (S.acc >= slot) {
+    S.acc = Math.min(S.acc - slot, slot);
+    if (S.state === 'word') {
+      if (S.wi >= S.lw.length) { S.state = 'verso'; S.lw.length && (S.lw[S.lw.length - 1].st = 'done'); updateWords(); spaceSeq(per * versoSlot(per), src.dolor, true); }
+      else { S.state = 'space'; spaceSeq(per * spr / (1 + spr), src.dolor, false); }
+    } else if (S.state === 'space') { S.state = 'word'; startWord(src, per, spr); }
+    else { nextLine(); S.state = 'word'; startWord(src, per, spr); }
+  }
+}
+
+// -------------------------------------------------------------- interfaz
+const lineEl = $('line');
+function renderLine() {
+  lineEl.innerHTML = '';
+  S.lw.forEach((lw, i) => {
+    const w = document.createElement('span'); w.className = 'w next'; w.style.setProperty('--n', lw.wc);
+    const wi = document.createElement('span'); wi.className = 'wi';
+    lw.chars.forEach(c => { const s = document.createElement('span');
+      s.className = 'c' + (c.kd === 'v' && c.rep ? ' v-' + c.vw : '') + (c.kd === 'sep' ? ' sep' : '');
+      s.textContent = c.disp; if (c.kd === 'v') s.style.letterSpacing = '0'; wi.appendChild(s); });
+    w.appendChild(wi); lineEl.appendChild(w); lw.el = w; lw.chEls = wi.children;
+  });
+  $('vtitle').textContent = 'Verso ' + S.lineNo;
+  $('nextl').textContent = S.bag.length ? 'siguiente:  ' + LINES[S.bag[0]] : '';
+  fitText();
+}
+function fitText() {
+  const box = $('textp'); let fs = Math.min(120, Math.max(24, box.clientHeight * 0.5));
+  for (; fs > 18; fs -= 4) { lineEl.style.fontSize = fs + 'px';
+    if (lineEl.scrollHeight <= lineEl.clientHeight + 2 && lineEl.scrollWidth <= lineEl.clientWidth + 2) break; }
+}
+function updateWords() {
+  S.lw.forEach(lw => { if (!lw.el) return; lw.el.className = 'w ' + lw.st;
+    lw.el.firstChild.style.setProperty('--f', lw.st === 'next' ? 0.85 : (0.7 + 0.3 * lw.amp).toFixed(3)); });
+}
+function markChar(ci) {
+  S.curCi = ci;
+  const cur = S.lw.find(w => w.st === 'now'); if (!cur || !cur.chEls) return;
+  for (let i = 0; i < cur.chEls.length; i++) { const e = cur.chEls[i];
+    e.classList.toggle('sung', ci >= 0 && i <= ci); e.classList.toggle('act', i === ci); }
+}
+
+function sizeCanvas(c) { const r = c.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.max(10, Math.round(r.width * dpr)), h = Math.max(10, Math.round(r.height * dpr));
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return [g, r.width, r.height]; }
+const HN = 140, histT = new Float64Array(HN).fill(-99), histM = new Float64Array(HN).fill(-1); let histI = 0, lastHist = 0;
+function curPitch() { const s = S.seg; if (!s || s.n0 === undefined || s.n0 === null || s.t0 === undefined) return null;
+  const pr = (S.E - s.t0) / Math.max(0.01, s.dur); return pr <= 1 ? s.n0 + (s.n1 - s.n0) * pr : null; }
+function drawPitch() {
+  const [g, W, H] = sizeCanvas($('cpitch')); g.clearRect(0, 0, W, H);
+  const x0 = 56, x1 = W - 10, y0 = 50, y1 = H - 14, lo = cfg.lo - 1, hi = cfg.hi + 2, deg = SCALES[cfg.scaleIdx][1];
+  const yOf = m => y1 - ((m - lo) / (hi - lo)) * (y1 - y0), now = S.E, tw = 6, xn = x0 + (x1 - x0) * 0.78;
+  g.font = '10px system-ui'; g.textAlign = 'right';
+  for (let m = cfg.lo; m <= cfg.hi; m++) { const rel = ((m - cfg.root) % 12 + 12) % 12;
+    if (deg && !deg.includes(rel)) continue;
+    g.strokeStyle = rel === 0 ? '#46596b' : '#28303a'; g.lineWidth = 1; g.beginPath(); g.moveTo(x0, yOf(m)); g.lineTo(x1, yOf(m)); g.stroke();
+    if ((y1 - y0) / (hi - lo) >= 9 || rel === 0) { g.fillStyle = '#8a96a3'; g.fillText(noteName(m), x0 - 6, yOf(m) + 3); } }
+  g.lineWidth = 3; g.strokeStyle = '#78beff';
+  for (let j = 1; j < HN; j++) { const k = (histI + j) % HN, kp = (k + HN - 1) % HN, th = histT[k], tp = histT[kp];
+    if (now - th <= tw && histM[k] >= 0 && histM[kp] >= 0 && th - tp < 0.2 && th - tp > 0) {
+      g.beginPath(); g.moveTo(xn - ((now - tp) / tw) * (xn - x0), yOf(histM[kp])); g.lineTo(xn - ((now - th) / tw) * (xn - x0), yOf(histM[k])); g.stroke(); } }
+  const s = S.seg; g.textAlign = 'right';
+  if (s && s.n0 !== undefined && s.n0 !== null && s.t0 !== undefined) {
+    const pr = clip((now - s.t0) / Math.max(0.01, s.dur), 0, 1), cur = s.n0 + (s.n1 - s.n0) * pr;
+    const xf = xn + Math.min(x1 - xn, (1 - pr) * s.dur / tw * (xn - x0));
+    g.strokeStyle = '#ffe66e'; g.beginPath(); g.moveTo(xn, yOf(cur)); g.lineTo(xf, yOf(s.n1)); g.stroke();
+    g.fillStyle = '#ffe66e'; g.beginPath(); g.arc(xn, yOf(cur), 8, 0, 7); g.fill();
+    g.font = '700 20px system-ui'; g.fillText(noteName(cur) + '   ' + Math.round(mtof(cur)) + ' Hz', W - 12, 36);
+    g.font = '12px system-ui'; g.fillStyle = '#a0aab4';
+    if (s.n1 - s.n0 > 1) g.fillText('sube', W - 12, 50); else if (s.n1 - s.n0 < -1) g.fillText('cae', W - 12, 50);
+  } else { g.fillStyle = '#8a96a3'; g.font = '700 18px system-ui'; g.fillText('silencio', W - 12, 34);
+    g.font = '12px system-ui'; g.fillText('siguiente: ' + noteName(S.midiBase), W - 12, 50); }
+}
+function drawMouth() {
+  const [g, W, H] = sizeCanvas($('cmouth')); g.clearRect(0, 0, W, H);
+  const seg = S.seg, kind = seg ? (seg.kind || 'reposo') : 'reposo'; let key = 'cerrada', vw = null, tense = false;
+  if (seg && seg.kd === 'vowel') { vw = seg.vw; key = vw; }
+  const cw = S.lw.find(w => w.st === 'now');
+  if (kind === 'inhala') key = 'inhala'; else if (kind === 'exhala') key = 'exhala'; else if (kind === 'apnea') key = 'cerrada';
+  else if (kind === 'click') key = 'cerrada'; else if (kind === 'soplo') key = 'exhala'; else if (kind === 'ladrido') { key = 'a'; tense = true; }
+  else if (kind === 'reposo' || (kind === 'cons' && !vw)) key = 'exhala';
+  else if (seg && seg.kd === 'vowel' && cw && cw.strong) key = 'ay';
+  if (kind === 'rasp' || kind === 'quiebra' || kind === 'corte') tense = true;
+  const info = MOUTH[key], mw0 = info[0], mh0 = Math.min(1.1, info[1] * (0.6 + 0.7 * S.boca));
+  S.mw += (mw0 - S.mw) * 0.35; S.mh += (mh0 - S.mh) * 0.35;
+  const cx = W / 2, cy = H * 0.45, mw = S.mw * W * 0.8, mh = Math.max(6, S.mh * H * 0.5);
+  const oval = (x, y, w, h, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(x, y, w / 2, h / 2, 0, 0, 7); g.fill(); };
+  oval(cx, cy, mw + 26, mh + 26, '#be4655'); oval(cx, cy, mw, mh, '#1e060c');
+  if (mh > 30) oval(cx, cy + mh * 0.27, mw * 0.6, mh * 0.42, '#cd6978');
+  if (key === 'i') { g.fillStyle = '#f0f0eb'; g.fillRect(cx - mw * 0.42, cy - mh * 0.5 + 2, mw * 0.84, Math.max(4, mh * 0.4)); }
+  if (tense) { g.strokeStyle = '#ff9646'; g.lineWidth = 3; [-1, 1].forEach(sg => { g.beginPath();
+    g.moveTo(cx + sg * (mw / 2 + 22), cy - 18); g.lineTo(cx + sg * (mw / 2 + 36), cy - 34);
+    g.moveTo(cx + sg * (mw / 2 + 22), cy + 18); g.lineTo(cx + sg * (mw / 2 + 36), cy + 34); g.stroke(); }); }
+  if (vw) { g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--' + vw); g.font = '700 40px ui-monospace,monospace'; g.textAlign = 'left'; g.fillText(LET[vw], 14, 66); }
+  g.fillStyle = '#c8d0d8'; g.font = '13px system-ui'; g.textAlign = 'left';
+  wrapText(g, info[2], 12, H - 58, W - 24, 17);
+}
+function wrapText(g, text, x, y, maxW, lh) { const words = text.split(' '); let line = '';
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > maxW && line) { g.fillText(line, x, y); y += lh; line = w; } else line = t; }
+  if (line) g.fillText(line, x, y); }
+function drawEnv() {
+  const [g, W, H] = sizeCanvas($('cenv')); g.clearRect(0, 0, W, H);
+  const x0 = 70, x1 = W - 12, y0 = 40, y1 = H - 50, a = S.ampNow, s = S.seg;
+  g.fillStyle = '#262c34'; g.fillRect(14, y0, 34, y1 - y0); g.fillStyle = '#6edc82'; g.fillRect(14, y1 - (y1 - y0) * a, 34, (y1 - y0) * a);
+  g.font = '700 20px system-ui'; g.textAlign = 'center'; g.fillText(dynMark(a), 31, y1 + 24);
+  if (s && s.kd === 'vowel' && s.att !== undefined) {
+    const tot = s.att + s.sus + s.rel, xa = x0 + (x1 - x0) * s.att / tot, xs = xa + (x1 - x0) * s.sus / tot;
+    g.fillStyle = 'rgba(60,110,200,.45)'; g.beginPath(); g.moveTo(x0, y1); g.lineTo(xa, y0); g.lineTo(xs, y0); g.lineTo(x1, y1); g.closePath(); g.fill();
+    g.strokeStyle = '#78beff'; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y1); g.lineTo(xa, y0); g.lineTo(xs, y0); g.lineTo(x1, y1); g.stroke();
+    const pr = clip((S.E - s.t0) / tot, 0, 1); g.strokeStyle = '#ffe66e'; g.beginPath(); g.moveTo(x0 + (x1 - x0) * pr, y0 - 6); g.lineTo(x0 + (x1 - x0) * pr, y1); g.stroke();
+    g.fillStyle = '#c8d0d8'; g.font = '11px system-ui'; g.textAlign = 'center';
+    g.fillText('A ' + s.att.toFixed(2) + ' s', x0 + (x1 - x0) * 0.17, y1 + 16); g.fillText('S ' + s.sus.toFixed(2) + ' s', x0 + (x1 - x0) * 0.5, y1 + 16);
+    g.fillText('R ' + s.rel.toFixed(2) + ' s', x0 + (x1 - x0) * 0.83, y1 + 16);
+    g.fillStyle = '#a0aab4'; g.fillText(s.att < 0.04 ? 'ataque brusco (golpe de glotis)' : (s.att > 0.1 ? 'ataque suave, soplado' : 'ataque medio'), (x0 + x1) / 2, y1 + 34);
+  } else { g.fillStyle = '#6e7a86'; g.font = '13px system-ui'; g.textAlign = 'center'; g.fillText('(sin vocal sonando)', (x0 + x1) / 2, (y0 + y1) / 2); }
+}
+function drawTimeline() {
+  const [g, W, H] = sizeCanvas($('tl')); g.clearRect(0, 0, W, H); const tot = total();
+  g.fillStyle = 'rgba(110,186,255,.25)'; g.strokeStyle = '#6ebaff'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(0, H);
+  for (let i = 0; i <= 240; i++) { const T = tot * i / 240; g.lineTo(W * i / 240, H - 4 - intensityAt(T) * (H - 10)); }
+  g.lineTo(W, H); g.fill(); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.07)'; GAPS.forEach(gp => g.fillRect(W * gp, 0, Math.max(2, W * GAPLEN / tot), H));
+  const px = W * clip(SIM.T / tot, 0, 1); g.fillStyle = '#ffe66e'; g.fillRect(px - 1, 0, 2, H);
+  g.fillStyle = '#8a96a3'; g.font = '10px system-ui'; g.textAlign = 'left'; g.fillText('intensidad simulada del radar  ·  clic para saltar', 6, 11);
+}
+function fmt(t) { t = Math.max(0, Math.floor(t)); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
+function updateHud() {
+  const seg = S.seg, kind = seg ? (seg.kind || 'reposo') : 'reposo', ki = KIND[kind] || KIND.voz;
+  $('bkind').textContent = ki[0]; $('bkind').style.color = ki[2]; $('bdesc').textContent = ki[1]; $('btip').textContent = TIPS[kind] || '';
+  $('lungf').style.height = (S.air * 100) + '%'; $('lungf').style.background = S.air > 0.5 ? '#6ebaff' : S.air > 0.2 ? '#ffbe5a' : '#ff5050';
+  $('bair').style.color = S.air < 0.15 ? '#ff5a5a' : S.air < 0.4 ? '#ffbe5a' : '#6ebaff';
+  $('bair').textContent = S.air < 0.15 ? 'SIN ALIENTO: la voz se rompe' : S.air < 0.4 ? 'poco aire: voz soplada y áspera' : 'aire suficiente';
+  $('dolorf').style.width = (clip(S.dolor, 0, 1) * 100) + '%';
+  $('phase').textContent = S.state === 'verso' ? 'silencio tenso' : (S.state === 'reposo' ? 'reposo' : S.phase);
+  $('clock').textContent = fmt(SIM.T) + ' / ' + fmt(total());
+  $('status').textContent = 'tempo ' + S.per.toFixed(1) + ' s/palabra · radar: vel ' + SIM.vel.toFixed(2) + ' m/s, dist ' + SIM.dist.toFixed(1) + ' m';
+}
+
+// ------------------------------------------------------------------ bucle
+let lastT = performance.now() / 1000, uiTick = 0;
+function tick() {
+  const t = performance.now() / 1000, dt = Math.min(0.1, t - lastT); lastT = t;
+  if (S.running) {
+    const d = dt * SPEED; S.E += d; simStep(d);
+    const due = sched.filter(e => e.t <= S.E).sort((a, b) => a.t - b.t);
+    if (due.length) { for (const e of due) sched.splice(sched.indexOf(e), 1); due.forEach(e => e.fn()); }
+    mainStep(d);
+    if (SIM.T >= total() && !S.finished) { S.finished = true; $('fin').style.display = 'flex'; toggleRun(false); }
+  }
+}
+function frame() {
+  if (S.running && S.E - lastHist >= 0.05) { lastHist = S.E; const p = curPitch(); histT[histI % HN] = S.E; histM[histI % HN] = p === null ? -1 : p; histI = (histI + 1) % HN; }
+  drawPitch(); drawMouth(); drawEnv(); drawTimeline(); updateHud(); requestAnimationFrame(frame);
+}
+
+// ---------------------------------------------------------------- control
+let wake = null;
+async function toggleRun(on) {
+  if (on === undefined) on = !S.running;
+  if (on) { audioInit(); if (ctx.state === 'suspended') ctx.resume(); if (S.finished) seek(0);
+    S.running = true; S.started = true; $('bstart').textContent = '❚❚ Pausa';
+    try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  } else { S.running = false; $('bstart').textContent = S.finished ? '↺ Repetir' : '▶ ' + (S.started ? 'Continuar' : 'Empezar'); if (ctx && ctx.state === 'running') ctx.suspend();
+    try { if (wake) { wake.release(); wake = null; } } catch (e) {} }
+}
+function seek(frac) {
+  cancelWord(); sched.length = 0; SIM.T = clip(frac, 0, 1) * total(); S.finished = false; $('fin').style.display = 'none';
+  S.state = 'verso'; S.acc = 3; S.lw = []; S.wi = 0; S.seg = null; S.curCi = -1; S.nrS = sources().ritmo; lineEl.innerHTML = '';
+}
+$('bstart').onclick = () => toggleRun();
+$('bnext').onclick = () => { cancelWord(); sched.length = 0; S.state = 'verso'; S.acc = 9; if (!S.running) toggleRun(true); };
+$('bmute').onclick = () => { cfg.mute = !cfg.mute; $('bmute').textContent = 'Guía: ' + (cfg.mute ? 'silenciada' : 'activa'); };
+$('tl').onclick = e => { const r = $('tl').getBoundingClientRect(); seek((e.clientX - r.left) / r.width); };
+window.addEventListener('resize', fitText);
+document.addEventListener('keydown', e => { if (e.code === 'Space' && !/INPUT|SELECT|BUTTON/.test(e.target.tagName)) { e.preventDefault(); toggleRun(); } });
+
+// panel de ajustes
+(function buildCfg() {
+  const g = $('cfgGrid');
+  const range = (label, key, min, max, step, unit, cb) => { const l = document.createElement('label'); const v = document.createElement('span'); v.className = 'val';
+    const i = document.createElement('input'); i.type = 'range'; i.min = min; i.max = max; i.step = step; i.value = cfg[key];
+    const show = () => v.textContent = (+cfg[key]).toFixed(step < 1 ? 1 : 0) + unit;
+    i.oninput = () => { cfg[key] = +i.value; show(); if (cb) cb(); }; show();
+    l.append(label + ' ', i, v); g.appendChild(l); };
+  range('Tempo más rápido', 'fast', 0.5, 15, 0.5, ' s/pal');
+  range('Tempo más lento', 'slow', 2, 60, 0.5, ' s/pal');
+  range('Suavizado del radar', 'tau', 0.2, 10, 0.2, ' s');
+  range('Volumen de la guía', 'guide', 0, 1.5, 0.05, '');
+  range('Aspereza de la guía', 'guideRasp', 0, 1, 0.05, '');
+  range('Ataque ×', 'attMul', 0.2, 4, 0.1, '');
+  range('Liberación ×', 'relMul', 0.2, 4, 0.1, '');
+  const num = (label, key, min, max) => { const l = document.createElement('label'); const i = document.createElement('input'); i.type = 'number'; i.min = min; i.max = max; i.value = cfg[key];
+    i.onchange = () => { cfg[key] = clip(+i.value, min, max); i.value = cfg[key]; }; l.append(label + ' ', i); g.appendChild(l); };
+  num('Soprano: nota grave (MIDI)', 'lo', 48, 80); num('Soprano: nota aguda (MIDI)', 'hi', 60, 96);
+  const l1 = document.createElement('label'); const sel = document.createElement('select');
+  SCALES.forEach((s, i) => { const o = document.createElement('option'); o.value = i; o.textContent = s[0]; sel.appendChild(o); });
+  sel.onchange = () => cfg.scaleIdx = +sel.value; l1.append('Escala ', sel); g.appendChild(l1);
+  const l2 = document.createElement('label'); const dm = document.createElement('input'); dm.type = 'number'; dm.min = 5; dm.max = 90; dm.value = cfg.durMin;
+  dm.onchange = () => { const f = SIM.T / total(); cfg.durMin = clip(+dm.value, 5, 90); dm.value = cfg.durMin; SIM.T = f * total(); };
+  l2.append('Duración de la sesión (min) ', dm); g.appendChild(l2);
+  Object.keys(opt).forEach(k => { const l = document.createElement('label'); const c = document.createElement('input'); c.type = 'checkbox'; c.checked = opt[k];
+    c.onchange = () => opt[k] = c.checked; l.append(c, OPTLAB[k]); g.appendChild(l); });
+})();
+
+setInterval(tick, 20);
+requestAnimationFrame(frame);
+window.__canto = { S, SIM, cfg, opt, seek, toggleRun };   // para pruebas
+})();
+
+</script>
+</body>
+</html>
